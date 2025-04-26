@@ -1,1 +1,52 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitGirl Downloader</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Load environment configuration first -->
+    <script src="env.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>FitGirl Downloader</h1>
+        
+        <div class="input-section">
+            <h2>Enter Download Links</h2>
+            <p>Enter FitGirl repack links (one per line)</p>
+            <textarea id="links-input" placeholder="https://fitgirl-repacks.site/game-name/"></textarea>
+            <div class="button-group">
+                <button id="start-download-btn" class="primary-btn">Start Downloads</button>
+                <button id="clear-links-btn" class="secondary-btn">Clear Links</button>
+            </div>
+        </div>
+        
+        <div class="progress-section">
+            <h2>Download Progress</h2>
+            <div id="download-status" class="status-box">
+                <p class="status-message">Ready to download</p>
+            </div>
+            
+            <div id="log-container">
+                <h3>Download Log</h3>
+                <div id="log-output" class="log-output"></div>
+            </div>
+            
+            <div class="download-list">
+                <h3>Downloads Queue</h3>
+                <ul id="download-queue"></ul>
+            </div>
+        </div>
+        
+        <footer>
+            <p class="backend-status">Backend: <span id="backend-status">Connecting...</span></p>
+        </footer>
+    </div>
+    
+    <!-- Load dependencies in order -->
+    <script src="api.js"></script>
+    <script src="websocket.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
