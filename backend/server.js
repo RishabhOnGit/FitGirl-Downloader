@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 // Get allowed origins from environment or default to localhost
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
   ? process.env.ALLOWED_ORIGINS.split(',')
-  : ['http://localhost:3000', 'https://fitgirl-downloader.vercel.app'];
+  : ['http://localhost:3000', 'https://fit-girl-downloader.vercel.app'];
 
 // Configure CORS for API routes
 app.use(cors({
