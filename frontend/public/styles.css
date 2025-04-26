@@ -33,35 +33,99 @@ body {
 
 h1 {
     color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     font-size: 2.5rem;
     text-shadow: 0 0 10px rgba(140, 82, 255, 0.3);
 }
 
 h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: var(--primary-color);
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     font-size: 1.5rem;
 }
 
+h2 i, h2 svg {
+    font-size: 1.3rem;
+}
+
 h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     color: var(--text-color);
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-size: 1.2rem;
-    opacity: 0.8;
+    opacity: 0.9;
+}
+
+h3 i {
+    font-size: 1.1rem;
+    color: var(--primary-color);
 }
 
 p {
     margin-bottom: 15px;
 }
 
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.app-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.app-logo {
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-color);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.app-version {
+    background-color: var(--secondary-color);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-left: 10px;
+}
+
 .input-section, .progress-section {
     background-color: var(--secondary-color);
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+}
+
+.input-section h2, .progress-section h2 {
+    margin-top: 0;
+}
+
+.input-label {
+    display: block;
+    margin-bottom: 15px;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    padding-left: 2px;
 }
 
 textarea {
@@ -70,25 +134,29 @@ textarea {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
     color: var(--text-color);
-    padding: 10px;
-    border-radius: 4px;
+    padding: 15px;
+    border-radius: 8px;
     resize: vertical;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     font-family: monospace;
+    font-size: 14px;
 }
 
 .button-group {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
 button {
     padding: 12px 20px;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .primary-btn {
@@ -114,10 +182,37 @@ button {
 
 .status-box {
     background-color: var(--card-bg);
-    padding: 15px;
-    border-radius: 4px;
-    margin-bottom: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
     border-left: 4px solid var(--info-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--border-color);
+}
+
+.progress-indicator.active {
+    background-color: var(--primary-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
 .status-message {
@@ -125,36 +220,85 @@ button {
     margin-bottom: 0;
 }
 
+.progress-stats {
+    font-weight: bold;
+    color: var(--primary-color);
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.log-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.log-actions button {
+    background: transparent;
+    border: none;
+    color: var(--text-color);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.log-actions button:hover {
+    opacity: 1;
+    color: var(--primary-color);
+}
+
 .log-output {
-    background-color: #000;
+    background-color: rgba(0, 0, 0, 0.4);
     padding: 15px;
-    border-radius: 4px;
+    border-radius: 8px;
     height: 200px;
     overflow-y: auto;
     font-family: monospace;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     border: 1px solid var(--border-color);
+    line-height: 1.5;
+}
+
+.download-list {
+    margin-top: 20px;
 }
 
 .download-list ul {
     list-style-type: none;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
 }
 
 .download-list li {
-    background-color: var(--card-bg);
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    border-radius: 4px;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    gap: 10px;
+}
+
+.download-list li:last-child {
+    border-bottom: none;
 }
 
 .log-entry {
-    margin-bottom: 5px;
-    padding: 5px 0;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.log-entry i {
+    margin-top: 3px;
 }
 
 .log-entry.info {
@@ -173,37 +317,60 @@ button {
     color: var(--warning-color);
 }
 
-.progress-bar {
-    width: 100%;
-    height: 10px;
-    background-color: var(--secondary-color);
-    border-radius: 5px;
-    margin-top: 10px;
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background-color: var(--primary-color);
-    transition: width 0.3s ease;
-}
-
 .timestamp {
     color: #666;
     margin-right: 5px;
+    font-size: 0.9em;
+}
+
+.download-entry {
+    margin: 12px 0;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--primary-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-left: 10px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.download-button:hover {
+    background: #7442e6;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.current-download {
+    font-weight: bold;
+    color: var(--primary-color);
 }
 
 footer {
-    margin-top: 30px;
+    margin-top: 40px;
     text-align: center;
     font-size: 0.9rem;
     color: #666;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
 }
 
 .backend-status {
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
 }
 
@@ -223,65 +390,7 @@ footer {
     color: var(--warning-color);
 }
 
-.download-button {
-    display: inline-block;
-    background: var(--primary-color);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    text-decoration: none;
-    margin-top: 5px;
-    margin-bottom: 10px;
-}
-
-.download-button:hover {
-    background: #7442e6;
-}
-
-.current-download {
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-.download-entry {
-    margin: 10px 0;
-    padding: 5px 0;
-}
-
-.popup-warning {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--card-bg);
-    border: 1px solid var(--warning-color);
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    z-index: 1000;
-    max-width: 400px;
-    text-align: center;
-}
-
-.warning-content p {
-    margin-bottom: 10px;
-}
-
-.dismiss-btn {
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.dismiss-btn:hover {
-    background: #7442e6;
-}
-/* Add these styles to your styles.css file */
-
+/* Browser settings popup */
 .browser-settings-popup {
     position: fixed;
     top: 0;
@@ -303,7 +412,7 @@ footer {
 
 .popup-content {
     background-color: var(--card-bg);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 30px;
     max-width: 600px;
     width: 90%;
@@ -374,110 +483,25 @@ footer {
     margin-top: 20px;
 }
 
-.popup-buttons button {
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
-}
-
-/* Additional styles for the app UI */
-.app-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.app-title {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.app-logo {
-    width: 50px;
-    height: 50px;
-    background-color: var(--primary-color);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-}
-
-.app-version {
-    background-color: var(--secondary-color);
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    color: var(--text-color);
-    opacity: 0.8;
-}
-
-/* Improved input section */
-.input-section {
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-}
-
-.input-label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: var(--primary-color);
-}
-
-/* Better progress and log styling */
-.status-box {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.progress-indicator {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.progress-indicator.active {
-    background-color: var(--primary-color);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-}
-
-.log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.log-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.log-actions button {
-    background: transparent;
-    border: none;
-    color: var(--text-color);
-    opacity: 0.7;
-    cursor: pointer;
-    padding: 5px;
-}
-
-.log-actions button:hover {
-    opacity: 1;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .status-box {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .browser-instructions {
+        flex-direction: column;
+    }
 }
