@@ -7,40 +7,70 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Load environment configuration first -->
     <script src="env.js"></script>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>FitGirl Downloader</h1>
+        <div class="app-header">
+            <div class="app-title">
+                <div class="app-logo">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h1>FitGirl Downloader</h1>
+                <span class="app-version">v1.0</span>
+            </div>
+            <div class="backend-status">
+                Backend: <span id="backend-status">Connecting...</span>
+            </div>
+        </div>
         
         <div class="input-section">
-            <h2>Enter Download Links</h2>
-            <p>Enter FitGirl repack links (one per line)</p>
+            <h2><i class="fas fa-link"></i> Enter Download Links</h2>
+            <label for="links-input" class="input-label">Paste FitGirl repack links (one per line)</label>
             <textarea id="links-input" placeholder="https://fitgirl-repacks.site/game-name/"></textarea>
             <div class="button-group">
-                <button id="start-download-btn" class="primary-btn">Start Downloads</button>
-                <button id="clear-links-btn" class="secondary-btn">Clear Links</button>
+                <button id="start-download-btn" class="primary-btn">
+                    <i class="fas fa-play"></i> Start Downloads
+                </button>
+                <button id="clear-links-btn" class="secondary-btn">
+                    <i class="fas fa-trash"></i> Clear Links
+                </button>
             </div>
         </div>
         
         <div class="progress-section">
-            <h2>Download Progress</h2>
+            <h2><i class="fas fa-tasks"></i> Download Progress</h2>
             <div id="download-status" class="status-box">
-                <p class="status-message">Ready to download</p>
+                <div class="status-info">
+                    <div class="progress-indicator" id="progress-indicator"></div>
+                    <p class="status-message">Ready to download</p>
+                </div>
+                <div class="progress-stats" id="progress-stats"></div>
             </div>
             
             <div id="log-container">
-                <h3>Download Log</h3>
+                <div class="log-header">
+                    <div class="log-title">
+                        <h3><i class="fas fa-list-alt"></i> Download Log</h3>
+                    </div>
+                    <div class="log-actions">
+                        <button id="clear-log-btn" title="Clear log">
+                            <i class="fas fa-eraser"></i>
+                        </button>
+                    </div>
+                </div>
                 <div id="log-output" class="log-output"></div>
             </div>
             
             <div class="download-list">
-                <h3>Downloads Queue</h3>
+                <h3><i class="fas fa-hourglass-half"></i> Downloads Queue</h3>
                 <ul id="download-queue"></ul>
             </div>
         </div>
         
         <footer>
-            <p class="backend-status">Backend: <span id="backend-status">Connecting...</span></p>
+            <p>FitGirl Downloader &copy; 2025 - For educational purposes only</p>
         </footer>
     </div>
     
