@@ -10,7 +10,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: ALLOWED_ORIGINS
-        value: https://fitgirl-downloader.vercel.app
+        value: https://fit-girl-downloader.vercel.app
     disk:
       name: downloads
       mountPath: /opt/render/project/downloads
