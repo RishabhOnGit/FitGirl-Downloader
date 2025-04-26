@@ -88,8 +88,8 @@ The frontend communicates with the backend through environment variables defined
 
 ```javascript
 window.env = {
-  BACKEND_URL: 'https://your-backend-url.onrender.com',
-  WEBSOCKET_URL: 'wss://your-backend-url.onrender.com/ws'
+  BACKEND_URL: 'https://fitgirl-downloader.onrender.com',
+  WEBSOCKET_URL: 'wss://fitgirl-downloader.onrender.com/ws'
 };
 ```
 
