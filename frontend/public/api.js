@@ -1,7 +1,7 @@
 // api.js - Client-side API functions for communicating with the server
 
 // Base URL for API endpoints - use Render backend URL from env.js
-const API_BASE_URL = window.env?.BACKEND_URL || 'https://fitgirl-downloader-api.onrender.com';
+const API_BASE_URL = window.env?.BACKEND_URL || 'https://fitgirl-downloader.onrender.com';
 
 /**
  * Process a single download link
