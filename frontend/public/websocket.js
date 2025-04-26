@@ -3,7 +3,7 @@
 // Initialize the WebSocket connection
 function initializeWebSocket() {
     // Connect to the Render backend WebSocket URL from env.js
-    const wsUrl = window.env?.WEBSOCKET_URL || 'wss://fitgirl-downloader-api.onrender.com/ws';
+    const wsUrl = window.env?.WEBSOCKET_URL || 'wss://fitgirl-downloader.onrender.com/ws';
     
     const socket = new WebSocket(wsUrl);
     
