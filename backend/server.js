@@ -115,12 +115,12 @@ app.post('/api/process', async (req, res) => {
         
         console.log(`Found download URL: ${downloadUrl}`);
         
-        // Return the info so the frontend can start the download
+        // Return the download URL directly to the frontend
         return res.json({
             success: true,
             fileName,
             downloadUrl,
-            downloadId: Date.now().toString() // Unique ID for this download
+            downloadId: Date.now().toString()
         });
         
     } catch (error) {
