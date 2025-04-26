@@ -2,8 +2,11 @@
 const linksInput = document.getElementById('links-input');
 const startDownloadBtn = document.getElementById('start-download-btn');
 const clearLinksBtn = document.getElementById('clear-links-btn');
+const clearLogBtn = document.getElementById('clear-log-btn');
 const downloadStatus = document.getElementById('download-status');
 const statusMessage = downloadStatus.querySelector('.status-message');
+const progressIndicator = document.getElementById('progress-indicator');
+const progressStats = document.getElementById('progress-stats');
 const logOutput = document.getElementById('log-output');
 const downloadQueue = document.getElementById('download-queue');
 
@@ -14,15 +17,72 @@ let currentDownloadIndex = 0;
 let totalDownloadsCompleted = 0;
 let downloadedFiles = new Set(); // Track which files have been downloaded
 
+// Create the browser settings popup
+function createBrowserSettingsPopup() {
+    // Check if we've already shown this popup in this session
+    if (localStorage.getItem('downloadSettingsShown')) {
+        return;
+    }
+    
+    const popup = document.createElement('div');
+    popup.className = 'browser-settings-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h2>⚙️ Optimize Your Download Experience</h2>
+            <p>For the best experience with automatic downloads, we recommend configuring your browser settings:</p>
+            
+            <div class="browser-instructions">
+                <div class="browser-section">
+                    <h3>Chrome / Edge Users:</h3>
+                    <ol>
+                        <li>Go to <strong>Settings → Downloads</strong></li>
+                        <li>Turn <strong>OFF</strong> "Ask where to save each file before downloading"</li>
+                        <li>Set a default download location</li>
+                    </ol>
+                </div>
+                
+                <div class="browser-section">
+                    <h3>Firefox Users:</h3>
+                    <ol>
+                        <li>Go to <strong>Options → General → Downloads</strong></li>
+                        <li>Select "Save files to..." instead of "Always ask you where to save files"</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="popup-buttons">
+                <button id="dont-show-again" class="secondary-btn">Don't show again</button>
+                <button id="close-popup" class="primary-btn">Got it!</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Add event listeners for buttons
+    document.getElementById('close-popup').addEventListener('click', () => {
+        document.body.removeChild(popup);
+    });
+    
+    document.getElementById('dont-show-again').addEventListener('click', () => {
+        localStorage.setItem('downloadSettingsShown', 'true');
+        document.body.removeChild(popup);
+    });
+}
+
 // Event Listeners
 startDownloadBtn.addEventListener('click', handleStartDownload);
 clearLinksBtn.addEventListener('click', clearLinks);
+clearLogBtn.addEventListener('click', clearLog);
 
 // Check if server is available on load
 window.addEventListener('load', async () => {
     try {
         const status = await window.api.checkServerStatus();
         logInfo("Server status", status.status);
+        
+        // Show the popup after a short delay
+        setTimeout(createBrowserSettingsPopup, 1000);
     } catch (error) {
         logError("Server connection", "Failed to connect to server");
     }
@@ -50,7 +110,9 @@ async function handleStartDownload() {
     downloadedFiles.clear(); // Clear the tracked downloads
     
     // Update UI
-    statusMessage.textContent = `Starting downloads: 0/${downloadLinks.length} completed`;
+    progressIndicator.classList.add('active');
+    statusMessage.textContent = `Starting downloads...`;
+    progressStats.textContent = `0/${downloadLinks.length}`;
     logInfo("Download queue", `Processing ${downloadLinks.length} links`);
     
     updateDownloadQueue();
@@ -63,12 +125,14 @@ async function startDownload() {
         logSuccess("All downloads completed", `${totalDownloadsCompleted}/${downloadLinks.length} files processed`);
         isDownloading = false;
         statusMessage.textContent = "All downloads completed";
+        progressIndicator.classList.remove('active');
         return;
     }
     
     const currentLink = downloadLinks[currentDownloadIndex];
     
-    statusMessage.textContent = `Downloading ${currentDownloadIndex + 1} of ${downloadLinks.length}`;
+    statusMessage.textContent = `Downloading...`;
+    progressStats.textContent = `${totalDownloadsCompleted}/${downloadLinks.length}`;
     
     logInfo("Started processing", getShortLink(currentLink));
     
@@ -104,7 +168,9 @@ async function startDownload() {
         downloadEntryDiv.className = 'download-entry';
         downloadEntryDiv.innerHTML = `
             <span>${processResult.fileName}</span>
-            <a href="${processResult.downloadUrl}" class="download-button" target="_blank">Download</a>
+            <a href="${processResult.downloadUrl}" class="download-button" target="_blank">
+                <i class="fas fa-download"></i> Download
+            </a>
         `;
         logOutput.appendChild(downloadEntryDiv);
         
@@ -117,6 +183,9 @@ async function startDownload() {
         
         // Increment the completed count
         totalDownloadsCompleted++;
+        
+        // Update progress stats
+        progressStats.textContent = `${totalDownloadsCompleted}/${downloadLinks.length}`;
         
         // Move to next download after a delay
         setTimeout(() => {
@@ -171,18 +240,17 @@ function updateDownloadQueue() {
     // Don't show anything if there are no links in the queue
     if (downloadLinks.length === 0) return;
     
-    // Update status message
-    statusMessage.textContent = `Downloads: ${totalDownloadsCompleted}/${downloadLinks.length} completed`;
-    
     // Add items that are still in the queue
     for (let i = currentDownloadIndex; i < downloadLinks.length; i++) {
         const link = downloadLinks[i];
         const li = document.createElement('li');
-        li.textContent = getShortLink(link);
         
         // Highlight the current download
         if (i === currentDownloadIndex && isDownloading) {
             li.className = 'current-download';
+            li.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${getShortLink(link)}`;
+        } else {
+            li.innerHTML = `<i class="fas fa-hourglass"></i> ${getShortLink(link)}`;
         }
         
         downloadQueue.appendChild(li);
@@ -191,7 +259,7 @@ function updateDownloadQueue() {
     // If queue is empty but we're still downloading
     if (currentDownloadIndex >= downloadLinks.length && isDownloading) {
         const li = document.createElement('li');
-        li.textContent = 'Finishing up...';
+        li.innerHTML = `<i class="fas fa-check-circle"></i> Finishing up...`;
         downloadQueue.appendChild(li);
     }
 }
@@ -210,7 +278,14 @@ function clearLinks() {
     isDownloading = false;
     downloadQueue.innerHTML = '';
     statusMessage.textContent = "Ready to download";
+    progressStats.textContent = '';
+    progressIndicator.classList.remove('active');
     logWarning("Download queue cleared", "All links removed");
+}
+
+function clearLog() {
+    logOutput.innerHTML = '';
+    logInfo("Log cleared", "");
 }
 
 // Logging functions
@@ -237,7 +312,23 @@ function addLogEntry(type, message, details) {
     const timestamp = getCurrentTimestamp();
     const content = details ? `${message}: ${details}` : message;
     
-    entry.innerHTML = `<span class="timestamp">${timestamp}</span> [${type.toUpperCase()}] ${content}`;
+    let icon = '';
+    switch (type) {
+        case 'info':
+            icon = '<i class="fas fa-info-circle"></i>';
+            break;
+        case 'success':
+            icon = '<i class="fas fa-check-circle"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fas fa-exclamation-circle"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fas fa-exclamation-triangle"></i>';
+            break;
+    }
+    
+    entry.innerHTML = `<span class="timestamp">${timestamp}</span> ${icon} ${content}`;
     
     logOutput.appendChild(entry);
     logOutput.scrollTop = logOutput.scrollHeight; // Auto-scroll to bottom
@@ -323,13 +414,16 @@ checkBackendConnection().then(isConnected => {
 const style = document.createElement('style');
 style.textContent = `
     .download-button {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
         background: var(--primary-color);
         color: white;
         padding: 5px 10px;
         border-radius: 4px;
         text-decoration: none;
         margin-left: 10px;
+        font-size: 0.9rem;
     }
     .download-button:hover {
         background: #7442e6;
