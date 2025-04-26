@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fitgirl-downloader-api
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: ALLOWED_ORIGINS
+        value: https://fitgirl-downloader.vercel.app
+    disk:
+      name: downloads
+      mountPath: /opt/render/project/downloads
+      sizeGB: 10
