@@ -13,6 +13,21 @@ let downloadLinks = [];
 let currentDownloadIndex = 0;
 let totalDownloadsCompleted = 0;
 
+// Create a hidden iframe for downloads to avoid popup blocks
+let downloadFrame;
+function createDownloadFrame() {
+    // Remove any existing frame
+    if (downloadFrame) {
+        document.body.removeChild(downloadFrame);
+    }
+    
+    // Create a new hidden iframe
+    downloadFrame = document.createElement('iframe');
+    downloadFrame.style.display = 'none';
+    document.body.appendChild(downloadFrame);
+    return downloadFrame;
+}
+
 // Event Listeners
 startDownloadBtn.addEventListener('click', handleStartDownload);
 clearLinksBtn.addEventListener('click', clearLinks);
@@ -22,6 +37,8 @@ window.addEventListener('load', async () => {
     try {
         const status = await window.api.checkServerStatus();
         logInfo("Server status", status.status);
+        // Create the download frame
+        createDownloadFrame();
     } catch (error) {
         logError("Server connection", "Failed to connect to server");
     }
@@ -85,13 +102,22 @@ async function startDownload() {
         
         logInfo("Found download URL", `${processResult.downloadUrl.substring(0, 30)}...`);
         
-        // Display download link and file info
-        addDownloadLink(
-            processResult.fileName, 
-            processResult.downloadUrl
-        );
+        // Show the file name and download button (for fallback)
+        const downloadEntryDiv = document.createElement('div');
+        downloadEntryDiv.className = 'download-entry';
+        downloadEntryDiv.innerHTML = `
+            <span>${processResult.fileName}</span>
+            <a href="${processResult.downloadUrl}" class="download-button" target="_blank">Download</a>
+        `;
+        logOutput.appendChild(downloadEntryDiv);
         
-        // Increment download counter
+        // Trigger automatic download
+        triggerDownload(processResult.downloadUrl, processResult.fileName);
+        
+        // Log success
+        logSuccess("Download starting", processResult.fileName);
+        
+        // Increment the completed count
         totalDownloadsCompleted++;
         
         // Move to next download after a delay
@@ -99,7 +125,7 @@ async function startDownload() {
             currentDownloadIndex++;
             updateDownloadQueue();
             startDownload();
-        }, 1500);
+        }, 3000); // 3 second delay between downloads
         
     } catch (error) {
         logError("Processing error", error.message);
@@ -110,29 +136,25 @@ async function startDownload() {
     }
 }
 
-function addDownloadLink(fileName, url) {
-    // Create download entry in the log
-    const downloadEntryDiv = document.createElement('div');
-    downloadEntryDiv.className = 'download-entry';
-    
-    // Create file name display
-    const fileNameSpan = document.createElement('span');
-    fileNameSpan.textContent = fileName;
-    downloadEntryDiv.appendChild(fileNameSpan);
-    
-    // Create download button
-    const downloadBtn = document.createElement('a');
-    downloadBtn.href = url;
-    downloadBtn.className = 'download-button';
-    downloadBtn.textContent = 'Download';
-    downloadBtn.target = '_blank'; // Open in new tab
-    downloadEntryDiv.appendChild(downloadBtn);
-    
-    // Add to log
-    logOutput.appendChild(downloadEntryDiv);
-    
-    // Log success message
-    logSuccess("Download ready", "Click the download button");
+function triggerDownload(url, fileName) {
+    try {
+        // Use the iframe for download to avoid popup blockers
+        downloadFrame.src = url;
+        
+        // Also add a fallback direct download attempt
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }, 500);
+    } catch (error) {
+        console.error("Download error:", error);
+        logError("Automatic download failed", "Please use the download button");
+    }
 }
 
 function updateDownloadQueue() {
