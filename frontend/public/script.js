@@ -12,6 +12,7 @@ let isDownloading = false;
 let downloadLinks = [];
 let currentDownloadIndex = 0;
 let totalDownloadsCompleted = 0;
+let popupWarningShown = false;
 
 // Event Listeners
 startDownloadBtn.addEventListener('click', handleStartDownload);
@@ -46,10 +47,17 @@ async function handleStartDownload() {
     currentDownloadIndex = 0;
     totalDownloadsCompleted = 0;
     isDownloading = true;
+    popupWarningShown = false;
     
     // Update UI
     statusMessage.textContent = `Starting downloads: 0/${downloadLinks.length} completed`;
     logInfo("Download queue", `Processing ${downloadLinks.length} links`);
+    
+    // Remove popup warning if it exists
+    const existingWarning = document.querySelector('.popup-warning');
+    if (existingWarning) {
+        document.body.removeChild(existingWarning);
+    }
     
     updateDownloadQueue();
     startDownload();
@@ -104,30 +112,45 @@ async function startDownload() {
 function triggerDownload(downloadId, url, fileName) {
     logInfo("Starting download", fileName);
     
-    // Create a download entry in the UI
+    // Create a download entry in the UI with download link
     const downloadEntryDiv = document.createElement('div');
     downloadEntryDiv.className = 'download-entry';
     downloadEntryDiv.innerHTML = `
         <span>${fileName}</span>
-        <a href="${url}" download="${fileName}" target="_blank" class="download-button">Download</a>
+        <a href="${url}" class="download-button">Download</a>
     `;
     
     logOutput.appendChild(downloadEntryDiv);
     
-    // Create a link element to trigger the download
-    const downloadLink = document.createElement('a');
-    downloadLink.href = url;
-    downloadLink.download = fileName; // Suggest a filename
-    downloadLink.target = '_blank'; // Open in new tab/window
-    downloadLink.style.display = 'none';
-    
-    // Add to DOM, click, and remove
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-    
-    // Log success
-    logSuccess("Download ready", "Click link or wait for automatic download");
+    // Try to download automatically
+    try {
+        // Create fetch request to get the file instead of opening in new tab
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                document.body.removeChild(a);
+                
+                logSuccess("Download ready", "Saving to your downloads folder");
+            })
+            .catch(error => {
+                console.error("Download error:", error);
+                logError("Download failed", "Please use the download button");
+                showPopupWarning();
+            });
+        
+    } catch (error) {
+        console.error("Download trigger error:", error);
+        logError("Automatic download failed", "Please use the download button");
+        showPopupWarning();
+    }
     
     // Increment the completed count
     totalDownloadsCompleted++;
@@ -139,6 +162,30 @@ function triggerDownload(downloadId, url, fileName) {
         updateDownloadQueue();
         startDownload();
     }, 3000);
+}
+
+function showPopupWarning() {
+    if (popupWarningShown) return;
+    
+    popupWarningShown = true;
+    
+    const popupWarning = document.createElement('div');
+    popupWarning.className = 'popup-warning';
+    popupWarning.innerHTML = `
+        <div class="warning-content">
+            <p>⚠️ Your browser might be blocking automatic downloads</p>
+            <p>Please check your browser settings or use the download buttons provided</p>
+            <button class="dismiss-btn">Got it</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popupWarning);
+    
+    // Add event listener to dismiss button
+    const dismissBtn = popupWarning.querySelector('.dismiss-btn');
+    dismissBtn.addEventListener('click', () => {
+        document.body.removeChild(popupWarning);
+    });
 }
 
 function updateDownloadQueue() {
@@ -302,7 +349,7 @@ checkBackendConnection().then(isConnected => {
     }
 });
 
-// Add some styling for the download button and current download
+// Add some styling for the download button, popup warning, and current download
 const style = document.createElement('style');
 style.textContent = `
     .download-button {
@@ -325,6 +372,35 @@ style.textContent = `
     .download-entry {
         margin: 10px 0;
         padding: 5px 0;
+    }
+    .popup-warning {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--card-bg);
+        border: 1px solid var(--warning-color);
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        z-index: 1000;
+        max-width: 400px;
+        text-align: center;
+    }
+    .warning-content p {
+        margin-bottom: 10px;
+    }
+    .dismiss-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .dismiss-btn:hover {
+        background: #7442e6;
     }
 `;
 document.head.appendChild(style);
