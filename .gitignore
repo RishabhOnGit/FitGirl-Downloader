@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+
+# Build files
+.vercel
+
+# OS files
+.DS_Store
+
+# Downloaded files
+backend/downloads/
