@@ -11,6 +11,7 @@ const downloadQueue = document.getElementById('download-queue');
 let isDownloading = false;
 let downloadLinks = [];
 let currentDownloadIndex = 0;
+let totalDownloadsCompleted = 0;
 
 // Event Listeners
 startDownloadBtn.addEventListener('click', handleStartDownload);
@@ -40,22 +41,29 @@ async function handleStartDownload() {
         return;
     }
     
+    // Reset state
     downloadLinks = links;
     currentDownloadIndex = 0;
+    totalDownloadsCompleted = 0;
+    isDownloading = true;
+    
+    // Update UI
+    statusMessage.textContent = `Starting downloads: 0/${downloadLinks.length} completed`;
+    logInfo("Download queue", `Processing ${downloadLinks.length} links`);
     
     updateDownloadQueue();
     startDownload();
 }
 
 async function startDownload() {
+    // Check if we've reached the end of the queue
     if (currentDownloadIndex >= downloadLinks.length) {
-        logSuccess("All downloads completed", `${downloadLinks.length} files downloaded`);
+        logSuccess("All downloads completed", `${totalDownloadsCompleted}/${downloadLinks.length} files processed`);
         isDownloading = false;
         statusMessage.textContent = "All downloads completed";
         return;
     }
     
-    isDownloading = true;
     const currentLink = downloadLinks[currentDownloadIndex];
     
     statusMessage.textContent = `Downloading ${currentDownloadIndex + 1} of ${downloadLinks.length}`;
@@ -68,14 +76,17 @@ async function startDownload() {
         
         if (!processResult.success) {
             logError("Failed to process link", processResult.message || "Unknown error");
-            moveToNextDownload();
+            // Still increment counters and move to next download
+            currentDownloadIndex++;
+            updateDownloadQueue();
+            startDownload();
             return;
         }
         
         logInfo("Found download URL", `${processResult.downloadUrl.substring(0, 30)}...`);
         
-        // Start the actual download with progress tracking
-        downloadWithProgress(
+        // Start the download with the URL obtained from the backend
+        triggerDownload(
             processResult.downloadId, 
             processResult.downloadUrl, 
             processResult.fileName
@@ -83,22 +94,17 @@ async function startDownload() {
         
     } catch (error) {
         logError("Processing error", error.message);
-        moveToNextDownload();
+        // Move to next download
+        currentDownloadIndex++;
+        updateDownloadQueue();
+        startDownload();
     }
 }
 
-async function downloadWithProgress(downloadId, url, fileName) {
+function triggerDownload(downloadId, url, fileName) {
     logInfo("Starting download", fileName);
     
-    // Create a link element to trigger the download
-    const downloadLink = document.createElement('a');
-    downloadLink.href = url;
-    downloadLink.download = fileName; // Suggest a filename
-    downloadLink.target = '_blank'; // Open in new tab/window
-    
-    logSuccess("Download ready", "Click link or wait for automatic download");
-    
-    // Log the link for user to click manually if automatic download fails
+    // Create a download entry in the UI
     const downloadEntryDiv = document.createElement('div');
     downloadEntryDiv.className = 'download-entry';
     downloadEntryDiv.innerHTML = `
@@ -108,32 +114,61 @@ async function downloadWithProgress(downloadId, url, fileName) {
     
     logOutput.appendChild(downloadEntryDiv);
     
-    // Trigger the download
+    // Create a link element to trigger the download
+    const downloadLink = document.createElement('a');
+    downloadLink.href = url;
+    downloadLink.download = fileName; // Suggest a filename
+    downloadLink.target = '_blank'; // Open in new tab/window
+    downloadLink.style.display = 'none';
+    
+    // Add to DOM, click, and remove
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
     
-    // Move to next download after a delay
+    // Log success
+    logSuccess("Download ready", "Click link or wait for automatic download");
+    
+    // Increment the completed count
+    totalDownloadsCompleted++;
+    
+    // Move to next download after a delay to avoid browser blocking multiple downloads
     setTimeout(() => {
-        moveToNextDownload();
+        // Move to the next download
+        currentDownloadIndex++;
+        updateDownloadQueue();
+        startDownload();
     }, 3000);
-}
-
-function moveToNextDownload() {
-    currentDownloadIndex++;
-    updateDownloadQueue();
-    startDownload();
 }
 
 function updateDownloadQueue() {
     // Clear the queue display
     downloadQueue.innerHTML = '';
     
+    // Don't show anything if there are no links in the queue
+    if (downloadLinks.length === 0) return;
+    
+    // Update status message
+    statusMessage.textContent = `Downloads: ${totalDownloadsCompleted}/${downloadLinks.length} completed`;
+    
     // Add items that are still in the queue
     for (let i = currentDownloadIndex; i < downloadLinks.length; i++) {
         const link = downloadLinks[i];
         const li = document.createElement('li');
         li.textContent = getShortLink(link);
+        
+        // Highlight the current download
+        if (i === currentDownloadIndex && isDownloading) {
+            li.className = 'current-download';
+        }
+        
+        downloadQueue.appendChild(li);
+    }
+    
+    // If queue is empty but we're still downloading
+    if (currentDownloadIndex >= downloadLinks.length && isDownloading) {
+        const li = document.createElement('li');
+        li.textContent = 'Finishing up...';
         downloadQueue.appendChild(li);
     }
 }
@@ -148,6 +183,7 @@ function clearLinks() {
     linksInput.value = '';
     downloadLinks = [];
     currentDownloadIndex = 0;
+    totalDownloadsCompleted = 0;
     isDownloading = false;
     downloadQueue.innerHTML = '';
     statusMessage.textContent = "Ready to download";
@@ -239,13 +275,15 @@ try {
     // Set callbacks for WebSocket
     window.downloadCompleteCallback = (downloadId) => {
         setTimeout(() => {
-            moveToNextDownload();
+            // This was previously moving to next download, 
+            // but now we handle that in triggerDownload
         }, 1000);
     };
     
     window.downloadErrorCallback = (downloadId, error) => {
         setTimeout(() => {
-            moveToNextDownload();
+            // This was previously moving to next download, 
+            // but now we handle that in triggerDownload
         }, 3000);
     };
 } catch (error) {
@@ -263,3 +301,30 @@ checkBackendConnection().then(isConnected => {
         setInterval(checkBackendConnection, 5000);
     }
 });
+
+// Add some styling for the download button and current download
+const style = document.createElement('style');
+style.textContent = `
+    .download-button {
+        display: inline-block;
+        background: var(--primary-color);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        margin-top: 5px;
+        margin-bottom: 10px;
+    }
+    .download-button:hover {
+        background: #7442e6;
+    }
+    .current-download {
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    .download-entry {
+        margin: 10px 0;
+        padding: 5px 0;
+    }
+`;
+document.head.appendChild(style);
