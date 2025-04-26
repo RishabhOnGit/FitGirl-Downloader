@@ -12,21 +12,7 @@ let isDownloading = false;
 let downloadLinks = [];
 let currentDownloadIndex = 0;
 let totalDownloadsCompleted = 0;
-
-// Create a hidden iframe for downloads to avoid popup blocks
-let downloadFrame;
-function createDownloadFrame() {
-    // Remove any existing frame
-    if (downloadFrame) {
-        document.body.removeChild(downloadFrame);
-    }
-    
-    // Create a new hidden iframe
-    downloadFrame = document.createElement('iframe');
-    downloadFrame.style.display = 'none';
-    document.body.appendChild(downloadFrame);
-    return downloadFrame;
-}
+let downloadedFiles = new Set(); // Track which files have been downloaded
 
 // Event Listeners
 startDownloadBtn.addEventListener('click', handleStartDownload);
@@ -37,8 +23,6 @@ window.addEventListener('load', async () => {
     try {
         const status = await window.api.checkServerStatus();
         logInfo("Server status", status.status);
-        // Create the download frame
-        createDownloadFrame();
     } catch (error) {
         logError("Server connection", "Failed to connect to server");
     }
@@ -63,6 +47,7 @@ async function handleStartDownload() {
     currentDownloadIndex = 0;
     totalDownloadsCompleted = 0;
     isDownloading = true;
+    downloadedFiles.clear(); // Clear the tracked downloads
     
     // Update UI
     statusMessage.textContent = `Starting downloads: 0/${downloadLinks.length} completed`;
@@ -100,6 +85,18 @@ async function startDownload() {
             return;
         }
         
+        // Check if we've already downloaded this file (by URL)
+        if (downloadedFiles.has(processResult.downloadUrl)) {
+            logWarning("Skipping duplicate download", processResult.fileName);
+            currentDownloadIndex++;
+            updateDownloadQueue();
+            startDownload();
+            return;
+        }
+        
+        // Add to our tracking set
+        downloadedFiles.add(processResult.downloadUrl);
+        
         logInfo("Found download URL", `${processResult.downloadUrl.substring(0, 30)}...`);
         
         // Show the file name and download button (for fallback)
@@ -111,7 +108,8 @@ async function startDownload() {
         `;
         logOutput.appendChild(downloadEntryDiv);
         
-        // Trigger automatic download
+        // Trigger automatic download using a direct link
+        // This approach is more likely to use browser's default save behavior
         triggerDownload(processResult.downloadUrl, processResult.fileName);
         
         // Log success
@@ -125,7 +123,7 @@ async function startDownload() {
             currentDownloadIndex++;
             updateDownloadQueue();
             startDownload();
-        }, 3000); // 3 second delay between downloads
+        }, 5000); // 5 second delay between downloads
         
     } catch (error) {
         logError("Processing error", error.message);
@@ -138,19 +136,28 @@ async function startDownload() {
 
 function triggerDownload(url, fileName) {
     try {
-        // Use the iframe for download to avoid popup blockers
-        downloadFrame.src = url;
+        // Create a single anchor element for the download
+        const link = document.createElement('a');
+        link.href = url;
         
-        // Also add a fallback direct download attempt
+        // On some browsers, setting download attribute helps preserve 
+        // filename and encourages browser to use download mode
+        link.setAttribute('download', fileName);
+        
+        // Hide the element
+        link.style.display = 'none';
+        
+        // Add to DOM
+        document.body.appendChild(link);
+        
+        // Trigger click
+        link.click();
+        
+        // Remove after a short delay
         setTimeout(() => {
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
             document.body.removeChild(link);
-        }, 500);
+        }, 1000);
+        
     } catch (error) {
         console.error("Download error:", error);
         logError("Automatic download failed", "Please use the download button");
@@ -340,3 +347,20 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Add download settings to the page
+document.addEventListener('DOMContentLoaded', function() {
+    // This will run once on load and attempt to set the default download behavior for the browser
+    // Note: This won't work in all browsers due to security restrictions
+    try {
+        // Create a single-use handler to respond to the first download
+        window.addEventListener('beforeunload', function(e) {
+            // This is to prevent multiple dialogs in some browsers
+            e.preventDefault();
+            return false;
+        }, {once: true});
+        
+    } catch (error) {
+        console.error("Could not set download behavior:", error);
+    }
+});
