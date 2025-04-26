@@ -1,7 +1,5 @@
 # FitGirl Downloader
 
-![FitGirl Downloader Banner](https://i.imgur.com/placeholder.png)
-
 A modern web application for automating the download process of FitGirl repack files. This project allows users to batch process multiple download links with an elegant interface and real-time status updates.
 
 ## 🚀 Features
@@ -148,5 +146,5 @@ This tool is created for educational purposes only. Please ensure you comply wit
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/RishabhOnGit">Your Name</a>
+  Made with ❤️ by <a href="https://github.com/RishabhOnGit">Rishabh</a>
 </p>
